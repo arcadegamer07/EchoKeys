@@ -131,7 +131,8 @@
       if (!indexUp && !middleUp && !ringUp) return 'fist';
       if (indexUp && !middleUp && !ringUp) return 'indexUp';
       if (indexUp && middleUp && !ringUp) return 'middleUp';
-      if (indexUp && middleUp && ringUp) return 'allOpen';
+      if (indexUp && middleUp && ringUp && littleUp) return 'allOpen';
+      if (indexUp && middleUp && ringUp) return 'ringUp';
       return null;
     }
 
@@ -211,4 +212,5 @@
     };
   </script>
 </body>
+
 </html>
