@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -117,12 +117,17 @@
       return landmarks[tip].y < landmarks[pip].y + tol;
     }
 
-    function isMostlyDown(tip, pip, landmarks, tol = 0.03) {
-      return landmarks[tip].y > landmarks[pip].y - tol;
+    function isThumbMostlyOpen(landmarks, tol = 0.05) {
+      return landmarks[4].x - landmarks[2].x > tol;
     }
 
-    function isThumbMostlyOpen(landmarks, tol = 0.05) {
-      return landmarks[4].x < landmarks[5].x - tol;
+    function isFist(landmarks) {
+      const thumb = !isThumbMostlyOpen(landmarks);
+      const indexDown = !isMostlyUp(8, 6, landmarks);
+      const middleDown = !isMostlyUp(12, 10, landmarks);
+      const ringDown = !isMostlyUp(16, 14, landmarks);
+      const littleDown = !isMostlyUp(20, 18, landmarks);
+      return thumb && indexDown && middleDown && ringDown && littleDown;
     }
 
     function getBaseNoteFromGesture(landmarks) {
@@ -177,14 +182,11 @@
         landmarks.forEach((landmark, index) => {
           ctx.beginPath();
           ctx.arc(landmark.x * canvas.width, landmark.y * canvas.height, 6, 0, 2 * Math.PI);
-
-          // Highlight thumb tip if mostly open
           if (index === 4 && isThumbMostlyOpen(landmarks)) {
-            ctx.fillStyle = "#00ff88"; // bright green highlight
+            ctx.fillStyle = "#00ff88";
           } else {
             ctx.fillStyle = "#a68aff";
           }
-
           ctx.fill();
         });
 
@@ -192,7 +194,6 @@
 
         if (gestureNote) {
           const wristY = landmarks[0].y;
-
           if (lastY !== null) {
             const deltaY = lastY - wristY;
             pitchBend += deltaY * 120;
@@ -215,6 +216,14 @@
           lastGesture = gestureNote;
           recentlyReleased = false;
           clearTimeout(noteTimeout);
+        } else if (isFist(landmarks)) {
+          if (playingNote) {
+            fluteSynth.triggerRelease();
+            playingNote = null;
+          }
+          document.getElementById("notePlayed").textContent = "Fist detected: no sound";
+          pitchBend = 0;
+          lastY = null;
         } else {
           lostFrames++;
           if (playingNote && lostFrames > maxLostFrames) {
@@ -245,22 +254,6 @@
       }
     }
 
-    async function setupCamera() {
-      try {
-        videoEl.srcObject = await navigator.mediaDevices.getUserMedia({ video: true });
-        videoEl.onloadeddata = () => {
-          loadingSpinner.style.display = "none";
-          cameraStatus.textContent = "Camera Active";
-          cameraStatus.style.color = "#a68aff";
-        };
-      } catch (e) {
-        loadingSpinner.style.display = "none";
-        cameraStatus.textContent = "Camera Error";
-        cameraStatus.style.color = "#f55";
-      }
-    }
-    setupCamera();
-
     const hands = new Hands({
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
     });
@@ -279,6 +272,22 @@
       width: 300,
       height: 220,
     });
+
+    async function setupCamera() {
+      try {
+        videoEl.srcObject = await navigator.mediaDevices.getUserMedia({ video: true });
+        videoEl.onloadeddata = () => {
+          loadingSpinner.style.display = "none";
+          cameraStatus.textContent = "Camera Active";
+          cameraStatus.style.color = "#a68aff";
+        };
+      } catch (e) {
+        loadingSpinner.style.display = "none";
+        cameraStatus.textContent = "Camera Error";
+        cameraStatus.style.color = "#f55";
+      }
+    }
+    setupCamera();
 
     camera.start();
 
