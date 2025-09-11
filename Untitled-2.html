@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>FluteCast Studio</title>
+  <title>EchoKeys</title>
   <style>
     body {
       background: #18171c;
@@ -35,7 +35,12 @@
       position: relative;
       z-index: 1;
     }
-    .main-title { font-size: 2em; margin-top: 2em; margin-bottom: 0.5em; }
+    .main-title {
+      color: #a68aff;
+      font-size: 2em;
+      margin-top: 2em;
+      margin-bottom: 0.5em;
+    }
     .subtitle { color: #aaa; font-size: 1.1em; margin-bottom: 2em; }
     .status { color: #a68aff; margin-top: 1em; font-weight: bold; font-size: 1.15em; }
     .player-card {
@@ -120,8 +125,9 @@
     </div>
   </div>
 
-  <div class="main-title">FluteCast Studio</div>
+  <div class="main-title">EchoKeys</div>
   <div class="subtitle">Move your hands up and down to play different notes</div>
+
   <div class="player-card">
     <div class="player-left" style="position: relative;">
       <span class="purple status">● Hand Tracking Active</span><br/>
@@ -133,7 +139,7 @@
     </div>
     <div class="player-right">
       <h2 class="purple">EchoKeys</h2>
-      <div>Position + horizontal motion controls pitch</div>
+      <div>Position + vertical controls pitch</div>
       <button id="startRec">Start Recording</button>
       <button id="stopRec" disabled>Stop</button>
       <a id="downloadLink" class="download-btn" style="display:none">Download</a>
@@ -155,7 +161,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tone@next/build/Tone.js"></script>
   <script>
-    // Your JavaScript code (unchanged)
     const videoEl = document.getElementById("video");
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
@@ -283,7 +288,9 @@
             recentlyReleased = true;
             pitchBend = 0;
             lastY = null;
-            noteTimeout = setTimeout(() => { recentlyReleased = false; }, 2000);
+            noteTimeout = setTimeout(() => {
+              recentlyReleased = false;
+            }, 2000);
           }
         }
       } else {
@@ -295,7 +302,9 @@
           recentlyReleased = true;
           pitchBend = 0;
           lastY = null;
-          noteTimeout = setTimeout(() => { recentlyReleased = false; }, 2000);
+          noteTimeout = setTimeout(() => {
+            recentlyReleased = false;
+          }, 2000);
         }
       }
     }
@@ -344,7 +353,7 @@
       const url = URL.createObjectURL(blob);
       const downloadLink = document.getElementById("downloadLink");
       downloadLink.href = url;
-      downloadLink.download = "EchoWaveeeeeee.wav";
+      downloadLink.download = "flutecast_output.wav";
       downloadLink.style.display = "inline";
       document.getElementById("startRec").disabled = false;
       document.getElementById("stopRec").disabled = true;
