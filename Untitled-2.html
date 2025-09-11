@@ -102,7 +102,6 @@
     let lostFrames = 0;
     const maxLostFrames = 10;
 
-    // Define base frequencies for notes (in Hz)
     const baseNotes = {
       C4: 261.63,
       D4: 293.66,
@@ -114,16 +113,137 @@
       C5: 523.25,
     };
 
-    const notesMap = {
-      indexup: "C4",
-      indexMiddle: "D4",
-      indexMiddleRing: "E4",
-      indexMiddleRingLittle: "F4",
-      allopen: "G4",
-      thumb: "A4",
-      thumbindex: "B4",
-      thumbindexmiddle: "C5",
-    };
+    function isMostlyUp(tip, pip, landmarks, tol = 0.03) {
+      return landmarks[tip].y < landmarks[pip].y + tol;
+    }
+
+    function isMostlyDown(tip, pip, landmarks, tol = 0.03) {
+      return landmarks[tip].y > landmarks[pip].y - tol;
+    }
+
+    function isThumbMostlyOpen(landmarks, tol = 0.05) {
+      return landmarks[4].x < landmarks[5].x - tol;
+    }
+
+    function getBaseNoteFromGesture(landmarks) {
+      if (!landmarks) return null;
+
+      const thumb = isThumbMostlyOpen(landmarks);
+      const indexUp = isMostlyUp(8, 6, landmarks);
+      const middleUp = isMostlyUp(12, 10, landmarks);
+      const ringUp = isMostlyUp(16, 14, landmarks);
+      const littleUp = isMostlyUp(20, 18, landmarks);
+
+      if (indexUp && !middleUp && !ringUp && !littleUp && !thumb) return "C4";
+      if (indexUp && middleUp && !ringUp && !littleUp && !thumb) return "D4";
+      if (indexUp && middleUp && ringUp && !littleUp && !thumb) return "E4";
+      if (indexUp && middleUp && ringUp && littleUp && !thumb) return "F4";
+      if (indexUp && middleUp && ringUp && littleUp && thumb) return "G4";
+      if (!indexUp && !middleUp && !ringUp && !littleUp && thumb) return "A4";
+      if (indexUp && !middleUp && !ringUp && !littleUp && thumb) return "B4";
+      if (indexUp && middleUp && !ringUp && !littleUp && thumb) return "C5";
+
+      return null;
+    }
+
+    let lastY = null;
+    let pitchBend = 0;
+
+    function onResults({ multiHandLandmarks }) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (multiHandLandmarks.length > 0) {
+        lostFrames = 0;
+        const landmarks = multiHandLandmarks[0];
+
+        const connections = [
+          [0, 1], [1, 2], [2, 3], [3, 4],
+          [0, 5], [5, 6], [6, 7], [7, 8],
+          [0, 9], [9, 10], [10, 11], [11, 12],
+          [0, 13], [13, 14], [14, 15], [15, 16],
+          [0, 17], [17, 18], [18, 19], [19, 20],
+        ];
+
+        ctx.strokeStyle = "#a68aff";
+        ctx.lineWidth = 2;
+
+        connections.forEach(([start, end]) => {
+          ctx.beginPath();
+          ctx.moveTo(landmarks[start].x * canvas.width, landmarks[start].y * canvas.height);
+          ctx.lineTo(landmarks[end].x * canvas.width, landmarks[end].y * canvas.height);
+          ctx.stroke();
+        });
+
+        landmarks.forEach((landmark, index) => {
+          ctx.beginPath();
+          ctx.arc(landmark.x * canvas.width, landmark.y * canvas.height, 6, 0, 2 * Math.PI);
+
+          // Highlight thumb tip if mostly open
+          if (index === 4 && isThumbMostlyOpen(landmarks)) {
+            ctx.fillStyle = "#00ff88"; // bright green highlight
+          } else {
+            ctx.fillStyle = "#a68aff";
+          }
+
+          ctx.fill();
+        });
+
+        const gestureNote = getBaseNoteFromGesture(landmarks);
+
+        if (gestureNote) {
+          const wristY = landmarks[0].y;
+
+          if (lastY !== null) {
+            const deltaY = lastY - wristY;
+            pitchBend += deltaY * 120;
+            pitchBend = Math.min(Math.max(pitchBend, -100), 100);
+          }
+          lastY = wristY;
+
+          const baseFreq = baseNotes[gestureNote] || 261.63;
+          const frequency = baseFreq * Math.pow(2, pitchBend / 1200);
+
+          if (playingNote !== frequency) {
+            fluteSynth.frequency.value = frequency;
+            if (!playingNote) {
+              fluteSynth.triggerAttack(frequency);
+            }
+            playingNote = frequency;
+            document.getElementById("notePlayed").textContent = `Note: ${gestureNote} (freq: ${frequency.toFixed(2)} Hz)`;
+          }
+
+          lastGesture = gestureNote;
+          recentlyReleased = false;
+          clearTimeout(noteTimeout);
+        } else {
+          lostFrames++;
+          if (playingNote && lostFrames > maxLostFrames) {
+            fluteSynth.triggerRelease();
+            playingNote = null;
+            document.getElementById("notePlayed").textContent = "";
+            recentlyReleased = true;
+            pitchBend = 0;
+            lastY = null;
+            noteTimeout = setTimeout(() => {
+              recentlyReleased = false;
+            }, 2000);
+          }
+        }
+      } else {
+        lostFrames++;
+        if (playingNote && lostFrames > maxLostFrames) {
+          fluteSynth.triggerRelease();
+          playingNote = null;
+          document.getElementById("notePlayed").textContent = "";
+          recentlyReleased = true;
+          pitchBend = 0;
+          lastY = null;
+          noteTimeout = setTimeout(() => {
+            recentlyReleased = false;
+          }, 2000);
+        }
+      }
+    }
 
     async function setupCamera() {
       try {
@@ -162,139 +282,6 @@
 
     camera.start();
 
-    function isMostlyUp(tip, pip, landmarks, tol = 0.03) {
-      return landmarks[tip].y < landmarks[pip].y + tol;
-    }
-
-    function isMostlyDown(tip, pip, landmarks, tol = 0.03) {
-      return landmarks[tip].y > landmarks[pip].y - tol;
-    }
-
-    function isThumbOpen(landmarks, tol = 0.05) {
-      return landmarks[4].x - landmarks[3].x > tol;
-    }
-
-    function getBaseNoteFromGesture(landmarks) {
-      if (!landmarks) return null;
-
-      const thumb = isThumbOpen(landmarks);
-      const indexUp = isMostlyUp(8, 6, landmarks);
-      const middleUp = isMostlyUp(12, 10, landmarks);
-      const ringUp = isMostlyUp(16, 14, landmarks);
-      const littleUp = isMostlyUp(20, 18, landmarks);
-
-      if (indexUp && !middleUp && !ringUp && !littleUp && !thumb) return "C4";
-      if (indexUp && middleUp && !ringUp && !littleUp && !thumb) return "D4";
-      if (indexUp && middleUp && ringUp && !littleUp && !thumb) return "E4";
-      if (indexUp && middleUp && ringUp && littleUp && !thumb) return "F4";
-      if (indexUp && middleUp && ringUp && littleUp && thumb) return "G4";
-      if (!indexUp && !middleUp && !ringUp && !littleUp && thumb) return "A4";
-      if (indexUp && !middleUp && !ringUp && !littleUp && thumb) return "B4";
-      if (indexUp && middleUp && !ringUp && !littleUp && thumb) return "C5";
-
-      return null;
-    }
-
-    let lastY = null;
-    let pitchBend = 0;
-
-    function onResults({ multiHandLandmarks }) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      if (multiHandLandmarks.length > 0) {
-        lostFrames = 0;
-        const landmarks = multiHandLandmarks[0];
-
-        // Draw landmarks and connections
-        const connections = [
-          [0, 1], [1, 2], [2, 3], [3, 4],
-          [0, 5], [5, 6], [6, 7], [7, 8],
-          [0, 9], [9, 10], [10, 11], [11, 12],
-          [0, 13], [13, 14], [14, 15], [15, 16],
-          [0, 17], [17, 18], [18, 19], [19, 20],
-        ];
-
-        ctx.strokeStyle = "#a68aff";
-        ctx.lineWidth = 2;
-
-        connections.forEach(([start, end]) => {
-          ctx.beginPath();
-          ctx.moveTo(landmarks[start].x * canvas.width, landmarks[start].y * canvas.height);
-          ctx.lineTo(landmarks[end].x * canvas.width, landmarks[end].y * canvas.height);
-          ctx.stroke();
-        });
-
-        landmarks.forEach((landmark) => {
-          ctx.beginPath();
-          ctx.arc(landmark.x * canvas.width, landmark.y * canvas.height, 6, 0, 2 * Math.PI);
-          ctx.fillStyle = "#a68aff";
-          ctx.fill();
-        });
-
-        const gestureNote = getBaseNoteFromGesture(landmarks);
-
-        if (gestureNote) {
-          // Calculate vertical hand position for pitch bend
-          const wristY = landmarks[0].y; // normalized [0-1]
-
-          if (lastY !== null) {
-            // Map wristY difference to pitch bend in Hz (+/- 30 cents approx)
-            const deltaY = lastY - wristY; // upward movement increases pitch
-            pitchBend += deltaY * 120; // tuning frequency bend scale, adjust for responsiveness
-            pitchBend = Math.min(Math.max(pitchBend, -100), 100); // clamp
-          }
-          lastY = wristY;
-
-          // Calculate final frequency with pitch bend (Hz)
-          const baseFreq = baseNotes[gestureNote] || 261.63;
-          const frequency = baseFreq * Math.pow(2, pitchBend / 1200); // cents to freq ratio
-
-          // Play or update note frequency
-          if (playingNote !== frequency) {
-            fluteSynth.frequency.value = frequency;
-            if (!playingNote) {
-              fluteSynth.triggerAttack(frequency);
-            }
-            playingNote = frequency;
-            document.getElementById("notePlayed").textContent = `Note: ${gestureNote} (freq: ${frequency.toFixed(2)} Hz)`;
-          }
-
-          lastGesture = gestureNote;
-          recentlyReleased = false;
-          clearTimeout(noteTimeout);
-        } else {
-          // No recognized gesture, increment lostFrames
-          lostFrames++;
-          if (playingNote && lostFrames > maxLostFrames) {
-            fluteSynth.triggerRelease();
-            playingNote = null;
-            document.getElementById("notePlayed").textContent = "";
-            recentlyReleased = true;
-            pitchBend = 0;
-            lastY = null;
-            noteTimeout = setTimeout(() => {
-              recentlyReleased = false;
-            }, 2000);
-          }
-        }
-      } else {
-        // No hand detected: increase lostFrames and maybe release
-        lostFrames++;
-        if (playingNote && lostFrames > maxLostFrames) {
-          fluteSynth.triggerRelease();
-          playingNote = null;
-          document.getElementById("notePlayed").textContent = "";
-          recentlyReleased = true;
-          pitchBend = 0;
-          lastY = null;
-          noteTimeout = setTimeout(() => {
-            recentlyReleased = false;
-          }, 2000);
-        }
-      }
-    }
-
-    // Set up audio recorder
     const recorder = new Tone.Recorder();
     fluteSynth.connect(recorder);
 
