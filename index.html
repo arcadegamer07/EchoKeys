@@ -2,292 +2,185 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>EchoKeys</title>
+  <title>FluteCast Studio - Intro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
-    body { background: #18171c; font-family: 'Segoe UI', Arial, sans-serif; color: #fff; margin: 0;}
-    .card { background: #22212a; border-radius: 16px; box-shadow: 0 2px 12px #0004; padding: 2em; margin: 1em; display: inline-block; vertical-align: top; width: 28%; text-align: center;}
-    .icon { background: #8243ea; border-radius: 50%; padding: 1em; display: inline-block; margin-bottom: 1em;}
-    .main-title { font-size: 2em; margin-top: 2em; margin-bottom: 0.5em;}
-    .subtitle { color: #aaa; font-size: 1.1em; margin-bottom: 2em;}
-    .status { color: #a68aff; margin-top: 1em; font-weight: bold; font-size: 1.15em;}
-    .player-card { background: #22212a; border-radius: 16px; box-shadow: 0 2px 12px #0004; padding: 2em; margin: 1em; display: flex; justify-content: space-between;}
-    .player-left, .player-right { width: 48%; }
-    .purple { color: #a68aff; }
-    button, .download-btn { background: #8243ea; color: white; border: none; border-radius: 6px; padding: 0.7em 2em; margin: 1em 0.5em; font-size: 1em; cursor: pointer; transition: background 0.2s;}
-    button:disabled, .download-btn:disabled { background: #393353; cursor: not-allowed;}
-    #notes-guide { margin-top: 2em; background: #18171c; border-radius: 12px; padding: 1em; color: white; text-align: center; letter-spacing: 1px;}
-    table { margin: auto; color: white; border-collapse: collapse; margin-bottom: 0.5em;}
-    td { border: 1px solid #393353; padding: 0.6em 1.2em; font-size: 1.1em;}
-    #canvas { position: absolute; left: 0; top: 0;}
-    #loadingSpinner { display: block; margin: 2em auto; width: 40px; height: 40px; border: 5px solid #a68aff; border-radius: 50%; border-top: 5px solid #22212a; animation: spin 1s linear infinite;}
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    #cameraStatus { margin-top: 0.7em; font-size: 1.1em; color: #a68aff;}
-    /* Camera mirroring for the video */
-    #video { transform: scaleX(-1); }
+    .features {
+  margin-top: 2em;
+  display: flex;
+  gap: 1em;
+  justify-content: space-between;
+  flex-wrap: nowrap; /* ensures they stay in one row */
+}
+
+.small-card {
+  background: #22212a;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #0004;
+  padding: 1.2em;
+  flex: 1;                /* all cards share equal space */
+  text-align: center;
+  font-size: 0.9em;
+  min-width: 0;           /* prevents overflow */
+}
+
+.small-card .icon {
+  background: #8243ea;
+  border-radius: 50%;
+  padding: 0.6em;
+  margin-bottom: 0.6em;
+  font-size: 1.2em;
+  display: inline-block;
+}
+
+.small-card h3 {
+  margin: 0.3em 0;
+  font-size: 0.95em;
+  color: #a68aff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      color: #fff;
+      background: #18171c;
+    }
+
+    /* Split screen */
+    .left, .right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 3em;
+    }
+
+    .left {
+      background: #22212a;
+      text-align: left;
+    }
+
+    .right {
+      background: #18171c;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Intro text */
+    .intro-text {
+      max-width: 500px;
+      font-size: 1.1em;
+      line-height: 1.6;
+      color: #ddd;
+    }
+
+    /* Right side content */
+    .brand {
+      font-weight: 500;
+      font-size: 2em;
+      letter-spacing: 3px;
+      margin-bottom: 2em;
+      color: #a68aff;
+    }
+    .time {
+      font-size: 3em;
+      font-weight: 400;
+      margin-bottom: 0.3em;
+    }
+    .date {
+      font-size: 1.2em;
+      font-weight: 300;
+      color: #bbb;
+      margin-bottom: 2em;
+    }
+
+    /* Explore button */
+    .explore-btn {
+      background: transparent;
+      border: 1px solid #a68aff;
+      color: #a68aff;
+      border-radius: 8px;
+      padding: 0.7em 2em;
+      font-size: 1em;
+      font-weight: 300;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .explore-btn:hover {
+      background: #a68aff;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
-  <div>
-    <div class="card">
-      <span class="icon">🖐️</span>
-      <h2>Hand Tracking</h2>
-      <span>Advanced AI-powered hand landmark detection with purple visual feedback</span>
+<!-- Left side -->
+<div class="left">
+  <div class="intro-text">
+    Traditional methods of playing and learning music rely heavily on physical instruments, 
+    which can be expensive, bulky, and require prior training to use effectively. 
+    This creates barriers for beginners, people with disabilities, and those without access 
+    to instruments. Additionally, in digital and remote environments, there is limited scope 
+    for expressive, gesture-based musical interaction.<br><br>
+    There is a need for an accessible, intuitive, and portable way to create and interact 
+    with music without relying on traditional instruments.
+  </div>
+
+  <!-- Feature Cards -->
+  <div class="features">
+    <div class="card small-card">
+      <span class="icon">🖐</span>
+      <h3>HAND TRACKING</h3>
+      <span>AI-powered hand landmark detection with purple visual feedback</span>
     </div>
-    <div class="card">
+    <div class="card small-card">
       <span class="icon">🎵</span>
-      <h2>Audio Synthesis</h2>
+      <h3>AUDIO SYNTHESIS</h3>
       <span>Real-time flute sound generation with natural envelope curves</span>
     </div>
-    <div class="card">
+    <div class="card small-card">
       <span class="icon">⚡</span>
-      <h2>Record & Export</h2>
-      <span>Capture your musical performances and download as audio files</span>
+      <h3>RECORD & EXPORT</h3>
+      <span>Capture performances and download as audio files</span>
     </div>
   </div>
-  <div class="main-title">EchoKeys</div>
-  <div class="subtitle">Move your hands up and down to play different notes</div>
-  <div class="player-card">
-    <div class="player-left" style="position: relative;">
-      <span class="purple status">● Hand Tracking Active</span><br/>
-      <!-- Video element is now mirrored -->
-      <video id="video" width="300" height="220" autoplay muted playsinline style="display:block; margin:auto; background:#111;"></video>
-      <canvas id="canvas" width="300" height="220"></canvas>
-      <div id="loadingSpinner"></div>
-      <div id="cameraStatus">Initializing camera...</div>
-      <div style="margin-top: 2em; color: #a68aff;" id="notePlayed"></div>
-    </div>
-    <div class="player-right">
-      <h2 class="purple">EchoKeys</h2>
-      <div>Position + horizontal motion controls pitch</div>
-      <button id="startRec">Start Recording</button>
-      <button id="stopRec" disabled>Stop</button>
-      <a id="downloadLink" class="download-btn" style="display:none">Download</a>
-      <div id="notes-guide">
-        <b>Hand Gesture to Note Mapping</b><br/><br/>
-        <table>
-          <tr>
-            <td>Index up: C4</td><td>Index+Middle: D4</td><td>Index+Middle+Ring: E4</td><td>Index+Middle+Ring+Little: F4</td>
-          </tr>
-          <tr>
-            <td>All open: G4</td><td>Thumb to the right: A4</td><td>Thumb+Index: B4</td><td>Thumb+Index+Middle: C5</td>
-          </tr>
-        </table>
-        Move your hand vertical to modulate pitch!
-      </div>
-    </div>
+</div>
+
+
+  <!-- Right side -->
+  <div class="right">
+    <div class="brand">FLUTECAST</div>
+    <div class="time" id="time"></div>
+    <div class="date" id="date"></div>
+    <button class="explore-btn" onclick="window.location.href='Untitled-1.html'">Explore...</button>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tone@next/build/Tone.js"></script>
+
   <script>
-    const videoEl = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const cameraStatus = document.getElementById("cameraStatus");
-    const loadingSpinner = document.getElementById("loadingSpinner");
-    const fluteSynth = new Tone.Synth({
-      oscillator: { type: "sine" },
-      envelope: { attack: 0.005, decay: 0.08, sustain: 1, release: 0.07 },
-    }).toDestination();
-    let playingNote = null;
-    let lastGesture = null;
-    let recentlyReleased = false;
-    let noteTimeout;
-    let lostFrames = 0;
-    const maxLostFrames = 10;
-    const baseNotes = {
-      C4: 261.63,
-      D4: 293.66,
-      E4: 329.63,
-      F4: 349.23,
-      G4: 392.00,
-      A4: 440.00,
-      B4: 493.88,
-      C5: 523.25,
-    };
-    function isMostlyUp(tip, pip, landmarks, tol = 0.03) {
-      return landmarks[tip].y < landmarks[pip].y + tol;
+    function updateDateTime() {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const timeStr = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      document.getElementById("time").textContent = timeStr;
+      document.getElementById("date").textContent = dateStr;
     }
-    function isThumbMostlyOpen(landmarks, tol = 0.05) {
-      return landmarks[4].x - landmarks[2].x > tol;
-    }
-    function isFist(landmarks) {
-      const thumb = !isThumbMostlyOpen(landmarks);
-      const indexDown = !isMostlyUp(8, 6, landmarks);
-      const middleDown = !isMostlyUp(12, 10, landmarks);
-      const ringDown = !isMostlyUp(16, 14, landmarks);
-      const littleDown = !isMostlyUp(20, 18, landmarks);
-      return thumb && indexDown && middleDown && ringDown && littleDown;
-    }
-    function getBaseNoteFromGesture(landmarks) {
-      if (!landmarks) return null;
-      const thumb = isThumbMostlyOpen(landmarks);
-      const indexUp = isMostlyUp(8, 6, landmarks);
-      const middleUp = isMostlyUp(12, 10, landmarks);
-      const ringUp = isMostlyUp(16, 14, landmarks);
-      const littleUp = isMostlyUp(20, 18, landmarks);
-      if (indexUp && !middleUp && !ringUp && !littleUp && !thumb) return "C4";
-      if (indexUp && middleUp && !ringUp && !littleUp && !thumb) return "D4";
-      if (indexUp && middleUp && ringUp && !littleUp && !thumb) return "E4";
-      if (indexUp && middleUp && ringUp && littleUp && !thumb) return "F4";
-      if (indexUp && middleUp && ringUp && littleUp && thumb) return "G4";
-      if (!indexUp && !middleUp && !ringUp && !littleUp && thumb) return "A4";
-      if (indexUp && !middleUp && !ringUp && !littleUp && thumb) return "B4";
-      if (indexUp && middleUp && !ringUp && !littleUp && thumb) return "C5";
-      return null;
-    }
-    let lastY = null;
-    let pitchBend = 0;
-    function onResults({ multiHandLandmarks }) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // --- MIRROR CANVAS START ---
-      ctx.save();
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
-      // --- MIRROR CANVAS END ---
-
-      if (multiHandLandmarks.length > 0) {
-        lostFrames = 0;
-        const landmarks = multiHandLandmarks[0];
-        const connections = [
-          [0, 1], [1, 2], [2, 3], [3, 4],
-          [0, 5], [5, 6], [6, 7], [7, 8],
-          [0, 9], [9, 10], [10, 11], [11, 12],
-          [0, 13], [13, 14], [14, 15], [15, 16],
-          [0, 17], [17, 18], [18, 19], [19, 20],
-        ];
-        ctx.strokeStyle = "#a68aff";
-        ctx.lineWidth = 2;
-        connections.forEach(([start, end]) => {
-          ctx.beginPath();
-          ctx.moveTo(landmarks[start].x * canvas.width, landmarks[start].y * canvas.height);
-          ctx.lineTo(landmarks[end].x * canvas.width, landmarks[end].y * canvas.height);
-          ctx.stroke();
-        });
-        landmarks.forEach((landmark, index) => {
-          ctx.beginPath();
-          ctx.arc(landmark.x * canvas.width, landmark.y * canvas.height, 6, 0, 2 * Math.PI);
-          if (index === 4 && isThumbMostlyOpen(landmarks)) {
-            ctx.fillStyle = "#00ff88";
-          } else {
-            ctx.fillStyle = "#a68aff";
-          }
-          ctx.fill();
-        });
-        const gestureNote = getBaseNoteFromGesture(landmarks);
-        if (gestureNote) {
-          const wristY = landmarks[0].y;
-          if (lastY !== null) {
-            const deltaY = lastY - wristY;
-            pitchBend += deltaY * 120;
-            pitchBend = Math.min(Math.max(pitchBend, -100), 100);
-          }
-          lastY = wristY;
-          const baseFreq = baseNotes[gestureNote] || 261.63;
-          const frequency = baseFreq * Math.pow(2, pitchBend / 1200);
-          if (playingNote !== frequency) {
-            fluteSynth.frequency.value = frequency;
-            if (!playingNote) {
-              fluteSynth.triggerAttack(frequency);
-            }
-            playingNote = frequency;
-            document.getElementById("notePlayed").textContent = `Note: ${gestureNote} (freq: ${frequency.toFixed(2)} Hz)`;
-          }
-          lastGesture = gestureNote;
-          recentlyReleased = false;
-          clearTimeout(noteTimeout);
-        } else if (isFist(landmarks)) {
-          if (playingNote) {
-            fluteSynth.triggerRelease();
-            playingNote = null;
-          }
-          document.getElementById("notePlayed").textContent = "Fist detected: no sound";
-          pitchBend = 0;
-          lastY = null;
-        } else {
-          lostFrames++;
-          if (playingNote && lostFrames > maxLostFrames) {
-            fluteSynth.triggerRelease();
-            playingNote = null;
-            document.getElementById("notePlayed").textContent = "";
-            recentlyReleased = true;
-            pitchBend = 0;
-            lastY = null;
-            noteTimeout = setTimeout(() => {
-              recentlyReleased = false;
-            }, 2000);
-          }
-        }
-      } else {
-        lostFrames++;
-        if (playingNote && lostFrames > maxLostFrames) {
-          fluteSynth.triggerRelease();
-          playingNote = null;
-          document.getElementById("notePlayed").textContent = "";
-          recentlyReleased = true;
-          pitchBend = 0;
-          lastY = null;
-          noteTimeout = setTimeout(() => {
-            recentlyReleased = false;
-          }, 2000);
-        }
-      }
-
-      // --- MIRROR CANVAS RESTORE ---
-      ctx.restore();
-    }
-    const hands = new Hands({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
-    });
-    hands.setOptions({
-      maxNumHands: 1,
-      modelComplexity: 0,
-      minDetectionConfidence: 0.7,
-      minTrackingConfidence: 0.7,
-    });
-    hands.onResults(onResults);
-    const camera = new Camera(videoEl, {
-      onFrame: async () => await hands.send({ image: videoEl }),
-      width: 300,
-      height: 220,
-    });
-    async function setupCamera() {
-      try {
-        videoEl.srcObject = await navigator.mediaDevices.getUserMedia({ video: true });
-        videoEl.onloadeddata = () => {
-          loadingSpinner.style.display = "none";
-          cameraStatus.textContent = "Camera Active";
-          cameraStatus.style.color = "#a68aff";
-        };
-      } catch (e) {
-        loadingSpinner.style.display = "none";
-        cameraStatus.textContent = "Camera Error";
-        cameraStatus.style.color = "#f55";
-      }
-    }
-    setupCamera();
-    camera.start();
-    const recorder = new Tone.Recorder();
-    fluteSynth.connect(recorder);
-    document.getElementById("startRec").onclick = async () => {
-      await Tone.start();
-      recorder.start();
-      document.getElementById("startRec").disabled = true;
-      document.getElementById("stopRec").disabled = false;
-    };
-    document.getElementById("stopRec").onclick = async () => {
-      const recording = await recorder.stop();
-      const blob = new Blob([recording], { type: "audio/wav" });
-      const url = URL.createObjectURL(blob);
-      const downloadLink = document.getElementById("downloadLink");
-      downloadLink.href = url;
-      downloadLink.download = "flutecast_output.wav";
-      downloadLink.style.display = "inline";
-      document.getElementById("startRec").disabled = false;
-      document.getElementById("stopRec").disabled = true;
-    };
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
   </script>
 </body>
 </html>
-
